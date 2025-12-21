@@ -12,6 +12,10 @@ void Cell::setCell(CellState new_state) {
     state = new_state;
 }
 
-bool Cell::isEmpty() {
+bool Cell::isEmpty() const {
     return state == CellState::EMPTY;
+}
+
+bool Cell::isObstacle() const {
+    return state == CellState::OBSTACLE;
 }

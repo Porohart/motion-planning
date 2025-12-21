@@ -12,7 +12,8 @@ class Cell {
         Cell();
         Cell(CellState start_state);
         void setCell(CellState new_state);
-        bool isEmpty();
+        bool isEmpty() const;
+        bool isObstacle() const;
     private:
         CellState state;
 };

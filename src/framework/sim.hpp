@@ -9,6 +9,6 @@ class Sim {
         void runSim();
     private:
         Grid grid;
-        // Robot robot;
-        // Planner planner;
+        PointRobot robot;
+        Planner planner;
 };
