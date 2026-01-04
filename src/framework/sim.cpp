@@ -61,6 +61,32 @@ void Sim::setPlanner(int planner_type) {
     }
 }
 
+bool Sim::isComplete() const {
+    if (planner == nullptr || robot == nullptr) {
+        return false;
+    }
+    return planner->isComplete();
+}
+
+void Sim::step() {
+    // Initialize robot if not already done
+    if (robot == nullptr) {
+        robot = new PointRobot(grid.getStart());
+    }
+    
+    // Ensure planner is set (default to Bug1 if not set)
+    if (planner == nullptr) {
+        setPlanner(1);  // Default to Bug1
+    }
+    
+    // Run one step of simulation
+    if (!planner->isComplete()) {
+        planner->plan();
+        point next_move = planner->getNextMove();
+        robot->moveTo(next_move);
+    }
+}
+
 int Sim::runSim() {
     // Initialize robot if not already done
     if (robot == nullptr) {

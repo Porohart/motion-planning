@@ -12,8 +12,8 @@ BIN_NAME = runner
 SRC_EXT = cpp
 
 # code lists #
-# Find all source files in the source directory, excluding test files
-SOURCES = $(shell find $(SRC_PATH) -name '*.$(SRC_EXT)' ! -path '$(SRC_PATH)/tests/*' | sort -k 1nr | cut -f2-)
+# Find all source files in the source directory, excluding test files and main_gui.cpp
+SOURCES = $(shell find $(SRC_PATH) -name '*.$(SRC_EXT)' ! -path '$(SRC_PATH)/tests/*' ! -name 'main_gui.cpp' | sort -k 1nr | cut -f2-)
 # Find all test files
 TEST_SOURCES = $(shell find $(SRC_PATH)/tests -name '*.$(SRC_EXT)' 2>/dev/null | sort)
 # Set the object file names, with the source directory stripped
@@ -26,9 +26,10 @@ TEST_BINS = $(TEST_SOURCES:$(SRC_PATH)/tests/%.$(SRC_EXT)=$(BIN_PATH)/test_%)
 
 # flags #
 COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g
-INCLUDES = -I src -I src/framework -I src/robots/2d -I src/planners/2d -I /usr/local/include
+INCLUDES = -I src -I src/framework -I src/robots/2d -I src/planners/2d -I /usr/local/include -I /usr/include/SFML
 # Space-separated pkg-config libraries used by this project
-LIBS =
+# SFML libraries (adjust paths if SFML is installed elsewhere)
+LIBS = -lsfml-graphics -lsfml-window -lsfml-system
 
 .PHONY: default_target
 default_target: release
@@ -87,6 +88,21 @@ test: tests
 test_1: $(BIN_PATH)/test_1
 	@echo "Running test_1..."
 	$(BIN_PATH)/test_1
+
+# Build GUI executable
+GUI_OBJECTS = $(filter-out $(BUILD_PATH)/main.o, $(OBJECTS)) $(BUILD_PATH)/main_gui.o
+$(BIN_PATH)/gui_runner: $(SRC_PATH)/main_gui.cpp $(GUI_OBJECTS) | dirs
+	@echo "Building GUI executable: $@"
+	@mkdir -p $(BIN_PATH)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -MP -MMD -c $(SRC_PATH)/main_gui.cpp -o $(BUILD_PATH)/main_gui.o
+	$(CXX) $(BUILD_PATH)/main_gui.o $(filter-out $(BUILD_PATH)/main.o, $(OBJECTS)) -o $@ ${LIBS}
+	@rm -f $(BUILD_PATH)/main_gui.d
+
+# Run GUI
+.PHONY: gui
+gui: $(BIN_PATH)/gui_runner
+	@echo "Running GUI..."
+	$(BIN_PATH)/gui_runner
 
 # Creation of the executable
 $(BIN_PATH)/$(BIN_NAME): $(OBJECTS)
