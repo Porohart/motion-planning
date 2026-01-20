@@ -25,26 +25,85 @@ int main(int argc, char* argv[]) {
     // Create GUI visualizer
     GridVisualizer visualizer(sim.getGrid(), 800, 800);
     
+    // Step mode: true = step through manually, false = auto-run
+    bool step_mode = true;
+    bool auto_running = false;
+    
     // Run simulation with visualization
     while (visualizer.isOpen() && !sim.isComplete()) {
         // Handle window events
-        if (visualizer.handleEvents()) {
-            break; // User closed window
+        sf::Event event;
+        bool should_close = false;
+        bool step_requested = false;
+        
+        while (visualizer.getWindow().pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                should_close = true;
+                break;
+            }
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Escape) {
+                    should_close = true;
+                    break;
+                }
+                // Space or Enter to step forward
+                if (event.key.code == sf::Keyboard::Space || event.key.code == sf::Keyboard::Enter) {
+                    step_requested = true;
+                }
+                // 'A' to toggle auto-run mode
+                if (event.key.code == sf::Keyboard::A) {
+                    auto_running = !auto_running;
+                    step_mode = !auto_running;
+                }
+                // 'S' to toggle step mode
+                if (event.key.code == sf::Keyboard::S) {
+                    step_mode = !step_mode;
+                    auto_running = !step_mode;
+                }
+            }
         }
         
-        // Run one step of simulation
-        sim.step();
+        if (should_close) {
+            break;
+        }
         
-        // Render current state
+        // Determine if we should step
+        bool should_step = false;
+        if (auto_running) {
+            should_step = true;
+        } else if (step_mode && step_requested) {
+            should_step = true;
+        }
+        
+        // Step simulation if conditions are met
+        if (should_step) {
+            sim.step();
+        }
+        
+        // Always render current state
         visualizer.render(sim.getRobot());
         
-        // Small delay to see the animation (optional)
-        sf::sleep(sf::milliseconds(50));
+        // Small delay to see the animation (only in auto mode)
+        if (auto_running) {
+            sf::sleep(sf::milliseconds(50));
+        } else {
+            // In step mode, just a tiny delay to keep the window responsive
+            sf::sleep(sf::milliseconds(10));
+        }
     }
     
     // Keep window open until user closes it
     while (visualizer.isOpen()) {
-        if (visualizer.handleEvents()) {
+        sf::Event event;
+        bool should_close = false;
+        while (visualizer.getWindow().pollEvent(event)) {
+            if (event.type == sf::Event::Closed || 
+                (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)) {
+                should_close = true;
+                break;
+            }
+        }
+        if (should_close) {
             break;
         }
         visualizer.render(sim.getRobot());

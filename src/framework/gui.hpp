@@ -19,6 +19,10 @@ class GridVisualizer {
         // Handle window events (returns true if window should close)
         bool handleEvents();
         
+        // Get window reference for event polling
+        sf::RenderWindow& getWindow() { return window; }
+        const sf::RenderWindow& getWindow() const { return window; }
+        
         // Close the window
         void close();
         

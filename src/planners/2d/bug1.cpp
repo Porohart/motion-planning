@@ -2,12 +2,19 @@
 #include "../../framework/utils.hpp"
 #include <cmath>
 #include <cassert>
+#include <iostream>
 
 Bug1::Bug1(Grid& grid, PointRobot& robot) 
     : Planner(grid, robot), sensor_distance(1) {
     current = robot.getPosition();
     goal = grid.getGoal();
     following_obstacle = false;
+    obstacle_looped = false;
+    // Initialize obstacle points to current position to avoid segfault
+    obstacle_encounter_point = current;
+    obstacle_point = current;
+    closest_obstacle_edge_point = current;
+    next_move = current;
 }
 
 void Bug1::plan() {
@@ -52,10 +59,6 @@ void Bug1::plan() {
             assert(false);
         }
     } else {
-        // if currently at the same point as the obstacle encounter point and it is not the first time encountering the obstacle, then the robot has looped around the obstacle
-        if(current == obstacle_encounter_point && !first_time_encountering_obstacle) {
-            obstacle_looped = true;
-        }
         // if the obstacle has been looped and the robot is at the point closest to the goal, then you have finished the obstacle following and can approach the goal linearly
         if(obstacle_looped && current == closest_obstacle_edge_point) { 
             obstacle_looped = false;
@@ -65,21 +68,27 @@ void Bug1::plan() {
             return;
         }
         // determine if the current point is the closest point to the goal seen so far
-        double current_distance_to_goal = std::sqrt(std::pow(current.x - goal.x, 2) + std::pow(current.y - goal.y, 2));
-        double closest_distance_to_goal = std::sqrt(std::pow(closest_obstacle_edge_point.x - goal.x, 2) + std::pow(closest_obstacle_edge_point.y - goal.y, 2));
+        double current_distance_to_goal = std::sqrt(std::pow(static_cast<int>(current.x) - static_cast<int>(goal.x), 2) + std::pow(static_cast<int>(current.y) - static_cast<int>(goal.y), 2));
+        double closest_distance_to_goal = std::sqrt(std::pow(static_cast<int>(closest_obstacle_edge_point.x) - static_cast<int>(goal.x), 2) + std::pow(static_cast<int>(closest_obstacle_edge_point.y) - static_cast<int>(goal.y), 2));
         if(current_distance_to_goal < closest_distance_to_goal) {
             closest_obstacle_edge_point = current;
         }
         // follow the wall clockwise by using a local coordinate system to determine the direction of the point to the left of the obstacle
+        // Ensure obstacle_point is valid
+        if (!grid.isValidCell(obstacle_point)) {
+            obstacle_point = current;
+        }
+        
         utils::matrix::Vector2d basis1 = utils::matrix::Vector2d(current, obstacle_point).normalize();
+        utils::matrix::Vector2d basis1_unnormed = utils::matrix::Vector2d(current, obstacle_point);
         utils::matrix::Vector2d left_vector = utils::matrix::Vector2d(1, 1);
         utils::matrix::Matrix rotation_matrix = utils::matrix::Matrix(2, 2, {{0, -1}, {1, 0}});
         utils::matrix::Vector2d basis2 = utils::matrix::matMul(rotation_matrix, basis1);
-        utils::matrix::Matrix transformation_matrix = utils::matrix::Matrix(2, 2, {{basis1[1][0], basis2[1][0]}, {basis1[2][0], basis2[2][0]}});
+        utils::matrix::Matrix transformation_matrix = utils::matrix::Matrix(2, 2, {{basis1[0][0], basis2[0][0]}, {basis1[1][0], basis2[1][0]}});
         utils::matrix::Vector2d left_dir = utils::matrix::matMul(transformation_matrix, left_vector);
         point next_point = current;
-        next_point.x += left_dir[1][0];
-        next_point.y += left_dir[2][0];
+        next_point.x += static_cast<std::size_t>(left_dir[0][0]);
+        next_point.y += static_cast<std::size_t>(left_dir[1][0]);
         if(grid.isObstacle(next_point)) {
             obstacle_point = next_point;
             next_move = current;
@@ -88,6 +97,12 @@ void Bug1::plan() {
                 first_time_encountering_obstacle = false;
             }
             next_move = next_point;
+            if(contains(traversed_points_while_following_obstacle, next_point)) {
+                obstacle_looped = true;
+                traversed_points_while_following_obstacle.clear();
+            } else {
+                traversed_points_while_following_obstacle.push_back(next_point);
+            }
         }
     }
     if(grid.isObstacle(next_move)) {

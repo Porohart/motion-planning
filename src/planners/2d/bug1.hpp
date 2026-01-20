@@ -2,6 +2,7 @@
 
 #include "Planner.hpp"
 #include "../../framework/utils.hpp"
+#include <set>
 
 class Bug1 : public Planner {
     public:
@@ -20,4 +21,5 @@ class Bug1 : public Planner {
         point closest_obstacle_edge_point;
         bool following_obstacle;
         bool obstacle_looped;
+        std::vector<point> traversed_points_while_following_obstacle;
 };
