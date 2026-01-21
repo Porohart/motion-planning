@@ -35,13 +35,13 @@ void GridVisualizer::render(const PointRobot& robot) {
             
             // Check if this is the start position
             point start = grid.getStart();
-            if (x == start.x && y == start.y) {
+            if (x == static_cast<std::size_t>(start.x) && y == static_cast<std::size_t>(start.y)) {
                 cell_color = start_color;
             }
             // Check if this is the goal position
             else {
                 point goal = grid.getGoal();
-                if (x == goal.x && y == goal.y) {
+                if (x == static_cast<std::size_t>(goal.x) && y == static_cast<std::size_t>(goal.y)) {
                     cell_color = goal_color;
                 }
                 // Check if it's an obstacle
@@ -57,7 +57,7 @@ void GridVisualizer::render(const PointRobot& robot) {
     // Draw robot position on top of everything
     point robot_pos = robot.getPosition();
     if (grid.isValidCell(robot_pos)) {
-        drawCell(robot_pos.x, robot_pos.y, robot_color);
+        drawCell(static_cast<std::size_t>(robot_pos.x), static_cast<std::size_t>(robot_pos.y), robot_color);
     }
     
     // Draw grid lines

@@ -6,8 +6,8 @@
 #include <cmath>
 
 struct point {
-    std::size_t x;
-    std::size_t y;
+    int x;
+    int y;
     
     // Equality operator for point comparison
     bool operator==(const point& other) const {
@@ -112,7 +112,7 @@ namespace utils {
                 Vector2d() : Matrix(2, 1, {{0}, {0}}) {}
                 Vector2d(int x, int y) : Matrix(2, 1, {{static_cast<double>(x)}, {static_cast<double>(y)}}) {}
                 Vector2d(double x, double y) : Matrix(2, 1, {{x}, {y}}) {}
-                Vector2d(point p1, point p2) : Matrix(2, 1, {{static_cast<double>(static_cast<int>(p2.x) - static_cast<int>(p1.x))}, {static_cast<double>(static_cast<int>(p2.y) - static_cast<int>(p1.y))}}) {}
+                Vector2d(point p1, point p2) : Matrix(2, 1, {{static_cast<double>(p2.x - p1.x)}, {static_cast<double>(p2.y - p1.y)}}) {}
                 double magnitude() const {
                     return std::sqrt(elements[0][0] * elements[0][0] + elements[1][0] * elements[1][0]);
                 } 

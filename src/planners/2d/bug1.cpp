@@ -68,8 +68,8 @@ void Bug1::plan() {
             return;
         }
         // determine if the current point is the closest point to the goal seen so far
-        double current_distance_to_goal = std::sqrt(std::pow(static_cast<int>(current.x) - static_cast<int>(goal.x), 2) + std::pow(static_cast<int>(current.y) - static_cast<int>(goal.y), 2));
-        double closest_distance_to_goal = std::sqrt(std::pow(static_cast<int>(closest_obstacle_edge_point.x) - static_cast<int>(goal.x), 2) + std::pow(static_cast<int>(closest_obstacle_edge_point.y) - static_cast<int>(goal.y), 2));
+        double current_distance_to_goal = std::sqrt(std::pow(current.x - goal.x, 2) + std::pow(current.y - goal.y, 2));
+        double closest_distance_to_goal = std::sqrt(std::pow(closest_obstacle_edge_point.x - goal.x, 2) + std::pow(closest_obstacle_edge_point.y - goal.y, 2));
         if(current_distance_to_goal < closest_distance_to_goal) {
             closest_obstacle_edge_point = current;
         }
@@ -87,8 +87,8 @@ void Bug1::plan() {
         utils::matrix::Matrix transformation_matrix = utils::matrix::Matrix(2, 2, {{basis1[0][0], basis2[0][0]}, {basis1[1][0], basis2[1][0]}});
         utils::matrix::Vector2d left_dir = utils::matrix::matMul(transformation_matrix, left_vector);
         point next_point = current;
-        next_point.x += static_cast<std::size_t>(left_dir[0][0]);
-        next_point.y += static_cast<std::size_t>(left_dir[1][0]);
+        next_point.x += static_cast<int>(left_dir[0][0]);
+        next_point.y += static_cast<int>(left_dir[1][0]);
         if(grid.isObstacle(next_point)) {
             obstacle_point = next_point;
             next_move = current;

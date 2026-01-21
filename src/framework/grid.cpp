@@ -36,20 +36,20 @@ void Grid::placeObstacle(std::size_t w, std::size_t h, std::size_t x, std::size_
 void Grid::placeObstacle(const std::vector<point>& cells) {
     for(const point& p : cells) {
         // bounds checking
-        if(p.x < w && p.y < h) {
-            layout[p.x][p.y].setCell(Cell::CellState::OBSTACLE);
+        if(p.x >= 0 && p.y >= 0 && static_cast<std::size_t>(p.x) < w && static_cast<std::size_t>(p.y) < h) {
+            layout[static_cast<std::size_t>(p.x)][static_cast<std::size_t>(p.y)].setCell(Cell::CellState::OBSTACLE);
         }
     }
 }
 
 void Grid::setStart(std::size_t x, std::size_t y) {
-    start.x = x;
-    start.y = y;
+    start.x = static_cast<int>(x);
+    start.y = static_cast<int>(y);
 }
 
 void Grid::setGoal(std::size_t x, std::size_t y) {
-    goal.x = x;
-    goal.y = y;
+    goal.x = static_cast<int>(x);
+    goal.y = static_cast<int>(y);
 }
 
 // Accessor methods for robot queries
@@ -69,7 +69,10 @@ bool Grid::isObstacle(std::size_t x, std::size_t y) const {
 }
 
 bool Grid::isObstacle(const point& p) const {
-    return isObstacle(p.x, p.y);
+    if(p.x < 0 || p.y < 0) {
+        return false;
+    }
+    return isObstacle(static_cast<std::size_t>(p.x), static_cast<std::size_t>(p.y));
 }
 
 bool Grid::isValidCell(std::size_t x, std::size_t y) const {
@@ -77,7 +80,10 @@ bool Grid::isValidCell(std::size_t x, std::size_t y) const {
 }
 
 bool Grid::isValidCell(const point& p) const {
-    return isValidCell(p.x, p.y);
+    if(p.x < 0 || p.y < 0) {
+        return false;
+    }
+    return isValidCell(static_cast<std::size_t>(p.x), static_cast<std::size_t>(p.y));
 }
 
 std::size_t Grid::getWidth() const {

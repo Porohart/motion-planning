@@ -5,8 +5,8 @@ PointRobot::PointRobot(point start) : startPos(start) {
 }
 
 PointRobot::PointRobot(std::size_t startX, std::size_t startY) {
-    startPos.x = startX;
-    startPos.y = startY;
+    startPos.x = static_cast<int>(startX);
+    startPos.y = static_cast<int>(startY);
     initialize();
 }
 
@@ -35,8 +35,8 @@ void PointRobot::moveTo(point p) {
 
 void PointRobot::moveTo(std::size_t x, std::size_t y) {
     point p;
-    p.x = x;
-    p.y = y;
+    p.x = static_cast<int>(x);
+    p.y = static_cast<int>(y);
     moveTo(p);
 }
 
